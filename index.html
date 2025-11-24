@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WebAR 3D Viewer（Luma 調整版）</title>
+  <title>WebAR 3D Viewer（WebXR Only）</title>
 
   <!-- model-viewer 元件 -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <script nomodule src="https://unpkg.com/@google/model-viewer/dist/model-viewer-legacy.js"></script>
 
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -21,11 +25,13 @@
       justify-content: center;
       color: #1f2933;
     }
+
     .wrapper {
       width: 100%;
       max-width: 480px;
       padding: 16px;
     }
+
     .card {
       background: #ffffffdd;
       border-radius: 20px;
@@ -33,17 +39,20 @@
       padding: 16px 16px 20px;
       backdrop-filter: blur(10px);
     }
+
     h1 {
       font-size: 1.25rem;
       margin-bottom: 4px;
       text-align: center;
     }
+
     .subtitle {
       font-size: 0.85rem;
       color: #6b7280;
       text-align: center;
       margin-bottom: 10px;
     }
+
     model-viewer {
       width: 100%;
       height: 360px;
@@ -51,19 +60,18 @@
       overflow: hidden;
       background-color: #f3f4f6;
     }
-    .hint, .device-hint, .status-hint {
+
+    .hint, .device-hint {
       margin-top: 8px;
       font-size: 0.8rem;
       color: #4b5563;
       line-height: 1.5;
     }
-    .status-hint {
-      color: #b45309;
-      display: none;
-    }
+
     .hint strong, .device-hint strong {
       color: #111827;
     }
+
     .tag {
       display: inline-block;
       border-radius: 999px;
@@ -72,34 +80,35 @@
       margin-right: 4px;
       background: #e5e7eb;
     }
+
     .footer {
       margin-top: 8px;
       font-size: 0.75rem;
       color: #9ca3af;
       text-align: center;
     }
+
     @media (min-height: 800px) {
-      model-viewer { height: 420px; }
+      model-viewer {
+        height: 420px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
     <div class="card">
-      <h1>AR 3D 展示（Luma 調整版）</h1>
-      <p class="subtitle">請用手機開啟此頁面，點選畫面中的 <strong>AR</strong> 圖示。</p>
+      <h1>AR 3D 展示（WebXR 模式）</h1>
+      <p class="subtitle">請用支援 AR 的手機開啟此頁面，點選畫面中的 <strong>AR</strong> 圖示。</p>
 
-      <!-- 🔧 這裡換成你的 Luma GLB & USDZ -->
+      <!-- 這裡換成你的 Luma GLB / 對應的 USDZ -->
       <model-viewer
         id="arModel"
-        src="models/Snail_Garden_Sculpture.glb"
-        ios-src="models/Snail_Garden_Sculpture.usdz"
+        src="models/chair.glb"
+        ios-src="models/chair.usdz"
         alt="3D 模型"
         ar
         ar-modes="webxr quick-look"
-        ar-placement="floor"          <!-- ⬅ 強制模型放在地板 -->
-        ar-scale="fixed"              <!-- ⬅ 不要隨距離亂縮放 -->
-        scale="0.3 0.3 0.3"           <!-- ⬅ 預設把模型縮小一點，可再調整 -->
         camera-controls
         auto-rotate
         autoplay
@@ -110,17 +119,16 @@
       </model-viewer>
 
       <div id="deviceHint" class="device-hint"></div>
-      <div id="statusHint" class="status-hint"></div>
 
       <div class="hint">
         📌 <strong>基本操作：</strong><br />
         ・單指拖曳：旋轉模型。<br />
-        ・兩指張合：放大 / 縮小（僅 3D 模式）。<br />
-        ・AR 模式中，若模型突然消失，請左右移動手機，讓系統重新偵測地面。
+        ・兩指張合：放大 / 縮小模型。<br />
+        ・若沒有看到 <strong>AR</strong> 按鈕，代表目前裝置或瀏覽器可能不支援 AR，只能以 3D 模式觀看。
       </div>
 
       <div class="footer">
-        WebAR Demo • Luma WebXR
+        WebAR Demo • WebXR Only
       </div>
     </div>
   </div>
@@ -131,57 +139,40 @@
       var isAndroid = /Android/i.test(ua);
       var isIOS = /iPhone|iPad|iPod/i.test(ua);
       var mv = document.getElementById('arModel');
-      var deviceHint = document.getElementById('deviceHint');
-      var statusHint = document.getElementById('statusHint');
+      var hintEl = document.getElementById('deviceHint');
 
-      if (!mv) return;
+      if (!mv || !hintEl) return;
 
-      // 裝置提示
       if (isAndroid) {
-        mv.setAttribute('ar-modes', 'webxr'); // ✅ Android 僅使用 WebXR
-        if (deviceHint) {
-          deviceHint.innerHTML = [
-            '<span class="tag">Android</span>',
-            '・請使用 <strong>最新版 Chrome</strong> 開啟本頁面。<br />',
-            '・請先左右移動手機，慢慢掃描桌面或地板，直到看到 AR 放置提示。'
-          ].join('');
-        }
-      } else if (isIOS) {
-        mv.setAttribute('ar-modes', 'quick-look webxr');
-        if (deviceHint) {
-          deviceHint.innerHTML = [
-            '<span class="tag">iOS</span>',
-            '・建議使用 <strong>Safari</strong> 開啟本頁面。<br />',
-            '・點選 <strong>AR</strong> 圖示後，可在相機畫面中放置 3D 模型。'
-          ].join('');
-        }
-      } else {
-        mv.removeAttribute('ar');
-        if (deviceHint) {
-          deviceHint.innerHTML = [
-            '<span class="tag">桌機 / 其他裝置</span>',
-            '・建議改用支援 AR 的手機掃描 QR Code 開啟。'
-          ].join('');
-        }
-      }
+        // ✅ Android：只用 WebXR，不用 Scene Viewer（避免「無法載入物件」）
+        mv.setAttribute('ar-modes', 'webxr');
 
-      // 監聽 AR 追蹤狀態，幫忙提示「為什麼會消失」
-      mv.addEventListener('ar-status', function (event) {
-        if (!statusHint) return;
-        if (event.detail.status === 'session-started') {
-          statusHint.style.display = 'block';
-          statusHint.textContent = '✅ 已進入 AR 模式，請在偵測到的平面上點一下放置模型。';
-        } else if (event.detail.status === 'not-tracking') {
-          // 追蹤不穩時模型可能暫時消失
-          statusHint.style.display = 'block';
-          statusHint.textContent = '⚠ AR 追蹤不穩定，請緩慢移動手機重新掃描地板或桌面，模型可能暫時消失。';
-        } else if (event.detail.status === 'failed') {
-          statusHint.style.display = 'block';
-          statusHint.textContent = '❌ AR 模式啟動失敗，可能是此裝置不支援 WebXR AR。';
-        } else {
-          statusHint.style.display = 'none';
-        }
-      });
+        hintEl.innerHTML = [
+          '<span class="tag">Android</span>',
+          '・請使用 <strong>最新版 Chrome</strong> 開啟本頁面。<br />',
+          '・手機需支援 <strong>ARCore / Google Play Services for AR</strong> 才能進入 AR 模式。<br />',
+          '・若點 AR 沒反應，可能是此裝置不支援 WebXR AR，仍可用 3D 模式觀看模型。'
+        ].join('');
+      } else if (isIOS) {
+        // 🍎 iOS：Quick Look + WebXR
+        mv.setAttribute('ar-modes', 'quick-look webxr');
+
+        hintEl.innerHTML = [
+          '<span class="tag">iOS</span>',
+          '・建議使用 <strong>Safari</strong> 開啟本頁面。<br />',
+          '・點選 <strong>AR</strong> 圖示，可透過「Quick Look」在相機畫面中放置 3D 模型。<br />',
+          '・若只看到 3D 而無法進 AR，請確認是否有提供對應的 <code>.usdz</code> 檔案。'
+        ].join('');
+      } else {
+        // 💻 其他裝置：只看 3D
+        mv.removeAttribute('ar');        // 不顯示 AR 按鈕
+        mv.setAttribute('ar-modes', '');
+
+        hintEl.innerHTML = [
+          '<span class="tag">桌機 / 其他裝置</span>',
+          '・目前裝置可能不支援原生 AR，建議使用支援 AR 的手機掃描 QR Code 再次開啟本頁面。'
+        ].join('');
+      }
     })();
   </script>
 </body>
