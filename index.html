@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebAR 3D Viewer</title>
+
+  <!-- 載入 model-viewer（Google 官方 Web Component） -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <script nomodule src="https://unpkg.com/@google/model-viewer/dist/model-viewer-legacy.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #f5f7ff, #dde4ff);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1f2933;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 480px;
+      padding: 16px;
+    }
+
+    .card {
+      background: #ffffffdd;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+      padding: 16px 16px 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #6b7280;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 360px;
+      border-radius: 16px;
+      overflow: hidden;
+      background-color: #f3f4f6;
+    }
+
+    .hint, .device-hint {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    .hint strong, .device-hint strong {
+      color: #111827;
+    }
+
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      margin-right: 4px;
+      background: #e5e7eb;
+    }
+
+    .footer {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    @media (min-height: 800px) {
+      model-viewer {
+        height: 420px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <h1>AR 3D 展示</h1>
+      <p class="subtitle">請使用手機開啟此頁面，點選畫面中的 <strong>AR</strong> 圖示。</p>
+
+      <!-- 🔧 將你的 GLB / USDZ 路徑填進來 -->
+      <model-viewer
+        id="arModel"
+        src="models/Snail_Garden_Sculpture.glb"
+        ios-src="models/Snail_Garden_Sculpture.usdz"
+        alt="3D 模型"
+        ar
+        ar-modes="scene-viewer quick-look webxr"
+        camera-controls
+        auto-rotate
+        autoplay
+        touch-action="pan-y"
+        shadow-intensity="1"
+        exposure="0.9"
+        interaction-prompt="auto">
+      </model-viewer>
+
+      <div id="deviceHint" class="device-hint"></div>
+
+      <div class="hint">
+        📌 <strong>基本操作：</strong><br />
+        ・用一根手指滑動：旋轉模型。<br />
+        ・用兩指張合：放大縮小模型。<br />
+        ・若沒有看到 <strong>AR</strong> 按鈕，代表目前裝置或瀏覽器可能不支援 AR，只能以 3D 模式觀看。
+      </div>
+
+      <div class="footer">
+        WebAR Demo • GitHub Pages
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 簡單偵測裝置類型，給不同說明文字（網址/程式都同一份）
+    (function () {
+      var ua = navigator.userAgent || navigator.vendor || window.opera;
+      var isAndroid = /Android/i.test(ua);
+      var isIOS = /iPhone|iPad|iPod/i.test(ua);
+      var hintEl = document.getElementById('deviceHint');
+
+      if (!hintEl) return;
+
+      if (isAndroid) {
+        hintEl.innerHTML = [
+          '<span class="tag">Android</span>',
+          '・請使用 Chrome 瀏覽器開啟本頁面。<br />',
+          '・畫面右下角會顯示 <strong>AR</strong> 或立體圖示，點擊後即可開啟 Google AR (Scene Viewer) 在環境中放置模型。'
+        ].join('');
+      } else if (isIOS) {
+        hintEl.innerHTML = [
+          '<span class="tag">iOS</span>',
+          '・建議使用 Safari 開啟本頁面。<br />',
+          '・出現 <strong>AR</strong> 圖示時點擊，可透過「Quick Look」在相機畫面中放置 3D 模型。<br />',
+          '・若點擊後只顯示 3D，而沒有進入 AR，請確認是否已提供對應的 <code>.usdz</code> 檔案。'
+        ].join('');
+      } else {
+        hintEl.innerHTML = [
+          '<span class="tag">桌機 / 其他裝置</span>',
+          '・目前裝置可能不支援原生 AR，建議用手機掃描 QR Code 再次開啟本頁面。<br />',
+          '・你仍可在此以滑鼠拖曳的方式查看 3D 模型。'
+        ].join('');
+      }
+    })();
+  </script>
+</body>
+</html>
